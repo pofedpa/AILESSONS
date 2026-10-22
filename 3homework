@@ -1,0 +1,70 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import GroupShuffleSplit
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import accuracy_score , mean_absolute_error
+from sklearn.model_selection import train_test_split
+
+df = pd.read_csv("school_progress.csv")
+y = df["status"]
+f = ["grade", "attempts", "hours_spent"]
+x = df[f]
+
+#1
+
+
+print(x.shape)
+print(y.value_counts())
+#
+x_train, x_test, y_train, y_test = train_test_split(
+     x, y, test_size=0.25, random_state=42
+)
+
+sns.countplot(
+     data=df,
+     x="status"
+)
+plt.show()
+
+#2
+
+splitter = GroupShuffleSplit(
+    n_splits=1,
+    test_size=0.25,
+    random_state=42
+)
+
+train_idx, test_idx = next(splitter.split(x, y, groups=df["student_id"]))
+x_train, x_test = x.iloc[train_idx], x.iloc[test_idx]
+y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+print(df["student_id"].nunique() == (df.iloc[train_idx]["student_id"].nunique()+ df.iloc[test_idx]["student_id"].nunique()))
+
+model = DecisionTreeClassifier(max_depth=3, random_state=42)
+model.fit(x_train, y_train)
+predictions = model.predict(x_test)
+print(pd.DataFrame({"actual": y_test, "predicted": predictions}).head(10))
+
+
+#3
+splitter = GroupShuffleSplit(
+    n_splits=1, test_size=0.25, random_state=42
+)
+
+train_idx, test_idx = next(splitter.split(x, y, groups=df["student_id"]))
+
+x_train, x_test = x.iloc[train_idx], x.iloc[test_idx]
+y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+model = DecisionTreeClassifier(max_depth=3, random_state=42)
+model.fit(x_train, y_train)
+predictions = model.predict(x_test)
+
+accuracy = accuracy_score(y_test, predictions)
+print(accuracy)
+sns.countplot(
+    x=y_test
+)
+plt.show()
