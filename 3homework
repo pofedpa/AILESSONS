@@ -68,3 +68,57 @@ sns.countplot(
     x=y_test
 )
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sklearn block 2
+
+#3 
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import GroupShuffleSplit
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import accuracy_score , mean_absolute_error
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+
+
+df = pd.read_csv("school_progress.csv")
+
+x = df[["course", "city", "clubs", "grade", "attempts", "average_score"]]
+y = df["status"]
+
+splitter = GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=42)
+train_idx, test_idx = next(splitter.split(x, y, groups=df["student_id"]))
+
+x_train, x_test = x.iloc[train_idx], x.iloc[test_idx]
+y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+e = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+e.fit(x_train[["course"]])
+
+xtre = e.fit_transform(x_train[["course"]])
+xtee = e.transform(x_test[["course"]])
+
+
+print(e.get_feature_names_out(["course"]))
+print(xtre.shape)
+print(xtee.shape)
+
+df2 = pd.DataFrame({"course": [x_train["course"].iloc[0], "Неизвестный курс"]})
+pd.DataFrame(e.transform(df2), columns=e.get_feature_names_out(["course"]), index=df2["course"])
