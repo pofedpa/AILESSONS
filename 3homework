@@ -366,3 +366,92 @@ accuracy_data=pd.DataFrame({'id':[1,2,3],'accuracy':[accuracy_score(y_test, pred
 
 sns.barplot(data=accuracy_data,x='id',y='accuracy')
 plt.show()
+
+
+
+
+# df = pd.DataFrame({
+#     "hours": [1, 2, 3, 4, 5, 6],
+#     "points": [8, 11, 14, 17, 20, 23],
+# })
+#
+# plt.scatter(df["hours"],df["points"],alpha=0.8,s=50)
+
+# df = pd.read_csv("school_progress.csv")
+# df = df.dropna(subset=["grade", "attempts", "hours_spent", "average_score", "student_id"])
+# x = df[["grade", "attempts", "hours_spent"]]
+# y=df['average_score']
+
+
+# splitter = GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=42)
+# train_idx, test_idx = next(splitter.split(x, y, groups=df["student_id"]))
+# print(df["student_id"].nunique() == (df.iloc[train_idx]["student_id"].nunique() + df.iloc[test_idx]["student_id"].nunique()))
+# x_train, x_test = x.iloc[train_idx], x.iloc[test_idx]
+# y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+# model = LinearRegression()
+# model.fit(x_train, y_train)
+# predict = model.predict(x_test)
+# print(mean_absolute_error(y_test, predict))
+# df2 = pd.DataFrame({
+#     'predict': predict,
+#     'yes': y_test.values
+# })
+# print(df2.head(10))
+#
+#
+# plt.plot(
+#     y_test,y_test
+# )
+#
+# plt.scatter(
+#     predict,y_test
+# )
+
+df = pd.read_csv("school_progress.csv")
+df = df.dropna(subset=["grade", "attempts", "hours_spent", "average_score", "student_id", "status"])
+
+x = df[["grade", "attempts", "hours_spent"]]
+df['completed'] = (df['status'] == 'completed').astype(int)
+y = df['completed']
+
+splitter = GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=42)
+train_idx, test_idx = next(splitter.split(x, y, groups=df["student_id"]))
+
+x_train, x_test = x.iloc[train_idx], x.iloc[test_idx]
+y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+model = Pipeline([
+    ("scaler", StandardScaler()),
+    ("model", LogisticRegression(max_iter=2000))
+])
+model.fit(x_train, y_train)
+predict = model.predict(x_test)
+print(accuracy_score(y_test, predict))
+predict2 = model.predict_proba(x_test)
+df3 = pd.DataFrame({
+    'test': y_test,
+    'predict': predict,
+    'proba_0': predict2[0:,0],
+    'proba_1': predict2[0:,1]
+})
+print(df3.head(10))
+
+print((predict2==model.classes_)[:, 1].all())
+
+
+# future = pd.DataFrame({"hours": [7]})
+# print(model.predict(future))
+# print(model.coef_)
+# print(model.intercept_)
+
+
+
+# plt.scatter(df["hours"], df["points"], label="Известные точки")
+# plt.plot(df["hours"], model.predict(X), label="Линейная модель")
+# plt.xlabel("Часы")
+# plt.ylabel("Очки")
+# plt.title("Как линейная модель описывает таблицу")
+# plt.legend()
+# plt.grid(alpha=0.3)
+plt.show()
+
